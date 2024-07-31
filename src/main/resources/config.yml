@@ -1,0 +1,12 @@
+enabledWorlds:
+  - bskyblock_world
+  - bskyblock_world_nether
+  - bskyblock_world_the_end
+
+
+disabledItems:
+  - CREATE_WRENCH
+
+messages:
+  - cannotUseRightClick: "这岛屿不属于你!"
+  - cannotUseItem: "你不能在这里使用这个东西！"
