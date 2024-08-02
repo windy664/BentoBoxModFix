@@ -58,6 +58,13 @@ public final class BentoBoxModFix extends JavaPlugin implements Listener {
                 if (player.isOp()) {
                     return;
                 }
+                if (event.getPlayer().getName().toUpperCase().contains("CLICKMACHINE_AUTO_CLICKER") ||
+                        event.getPlayer().getName().toUpperCase().contains("[MINECRAFT]") ||
+                        event.getPlayer().getName().toUpperCase().contains("[CLICKMACHINE_AUTO_CLICKER]") ||
+                        event.getPlayer().getName().toUpperCase().contains("[CLICKMACHINE]")) {
+                    getLogger().warning("已取消拦截自动点击器操作空岛");
+                    return;
+                }
                 // 使用PAPI检查占位符的值
                 String canBuildPlaceholder = PlaceholderAPI.setPlaceholders(player, "%bskyblock_on_island%");
                 boolean canBuild = Boolean.parseBoolean(canBuildPlaceholder);
