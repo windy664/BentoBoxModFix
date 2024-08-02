@@ -1,5 +1,5 @@
 name: BentoBoxModFix
-version: '1.0-SNAPSHOT'
+version: '1.4-SNAPSHOT'
 main: org.windy.bentoBoxModFix.BentoBoxModFix
 api-version: '1.20'
 
