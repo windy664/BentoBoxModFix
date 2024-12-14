@@ -1,117 +1,74 @@
-package org.windy.bentoBoxModFix;
+package org.windy.iridiumskyblockforgetweaks;
 
-import me.clip.placeholderapi.PlaceholderAPI;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.simibubi.create.AllTags.AllItemTags;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Listener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Objects;
-
-public final class BentoBoxModFix extends JavaPlugin implements Listener {
-
-    private List<String> enabledWorlds;
-    private String cannotUseMessage;
-    private String cannotUseItem;
+    public final class IridiumSkyblockForgeTweaks extends JavaPlugin implements Listener {
+    private static final Logger LOGGER = LogManager.getLogger();
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-        loadConfigValues();
-        String version = this.getDescription().getVersion();
-        String serverName = this.getServer().getName();
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            Bukkit.getPluginManager().registerEvents(this, this);
-            this.getServer().getConsoleSender().sendMessage(Texts.logo);
-            this.getServer().getConsoleSender().sendMessage("v"+"§a" + version + "运行环境：§e " + serverName + "\n");
-        } else {
-            getLogger().warning("你未安装前置PlaceholderAPI！插件没法启动！");
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
-    }
-
-    private void loadConfigValues() {
-        FileConfiguration config = getConfig();
-        enabledWorlds = config.getStringList("enabledWorlds");
-        cannotUseMessage = config.getString("messages.cannotUseRightClick");
-        cannotUseItem = config.getString("messages.cannotUseItem");
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Location location = player.getLocation();
-        String worldName = Objects.requireNonNull(location.getWorld()).getName();
-        ItemStack heldItem = event.getItem();
-
-        if (enabledWorlds.contains(worldName)) {
-            if (event.getAction().name().contains("RIGHT_CLICK")) {
-                if (player.isOp()) {
-                    return;
-                }
-                if (event.getPlayer().getName().toUpperCase().contains("CLICKMACHINE_AUTO_CLICKER") ||
-                        event.getPlayer().getName().toUpperCase().contains("[MINECRAFT]") ||
-                        event.getPlayer().getName().toUpperCase().contains("[CLICKMACHINE_AUTO_CLICKER]") ||
-                        event.getPlayer().getName().toUpperCase().contains("[CLICKMACHINE]")) {
-                    getLogger().warning("已取消拦截自动点击器操作空岛");
-                    return;
-                }
-                // 使用PAPI检查占位符的值
-                String canBuildPlaceholder = PlaceholderAPI.setPlaceholders(player, "%bskyblock_on_island%");
-                boolean canBuild = Boolean.parseBoolean(canBuildPlaceholder);
-
-                if (!canBuild) {
-                    event.setUseInteractedBlock(Event.Result.DENY);
-                    event.setUseItemInHand(Event.Result.DENY);
-                    event.setCancelled(true);
-                    if (cannotUseMessage != null) {
-                        player.sendMessage(cannotUseMessage);
-                    }
-                }
-            }
-        }
-    }
-    private boolean isItemDisabled(Material itemType) {
-        FileConfiguration config = getConfig();
-        return config.getStringList("disabledItems").contains(itemType.name());
-    }
-
-    @EventHandler
-    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
-        Player player = event.getPlayer();
-        ItemStack newItem = player.getInventory().getItem(event.getNewSlot());
-        String canBuildPlaceholder = PlaceholderAPI.setPlaceholders(player, "%bskyblock_on_island%");
-        boolean canBuild = Boolean.parseBoolean(canBuildPlaceholder);
-        Location location = player.getLocation();
-        String worldName = Objects.requireNonNull(location.getWorld()).getName();
-
-        if (enabledWorlds.contains(worldName)) {
-            if (player.isOp()) {
-                return;
-            }
-
-            if (newItem != null && isItemDisabled(newItem.getType()) && !canBuild) {
-                event.setCancelled(true);
-                if (cannotUseItem != null) {
-                    player.sendMessage(cannotUseItem);
-                }
-            }
-        }
+        // 注册事件监听器
+        //getServer().getPluginManager().registerEvents(new ForgeEventListener(), this);
+        Bukkit.getPluginManager().registerEvents(this, this);
+        LOGGER.info("日志测试！！！！！！！！！！！！！！！！！！");
     }
 
     @Override
     public void onDisable() {
-        this.getServer().getConsoleSender().sendMessage(Texts.logo);
-        this.getServer().getConsoleSender().sendMessage("已卸载！\n");
-        this.getServer().getConsoleSender().sendMessage("§6+--------------------------------------+");
+        // 在插件禁用时执行的代码（如果有）
+    }
+    
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onWrenchEvent(PlayerInteractEvent.RightClickBlock event) {
+        LOGGER.info("扳手事件前触发");
+        Player player = event.getEntity();
+        ItemStack itemStack = event.getItemStack();
+
+        // 基本检查：防止事件被取消
+        if (event.isCanceled()) return;
+        if (event.getLevel() == null) return;
+        if (player == null || !player.mayBuild()) return;
+        if (itemStack.isEmpty()) return;
+
+        // 从配置文件获取 CREATE_WRENCH 材质名称
+        String wrenchMaterialName = "CREATE_WRENCH";
+        Material wrenchMaterial = Material.getMaterial(wrenchMaterialName);
+
+        if (wrenchMaterial == null || !itemStack.getItem().toString().contains(wrenchMaterial.name())) {
+            return; // 如果没有持有 CREATE_WRENCH，直接返回
+        }
+
+        // 检查该物品是否为扳手
+        if (AllItemTags.WRENCH.matches(itemStack.getItem())) {
+            LOGGER.info("监听到Forge扳手事件，准备取消");
+
+            // 获取方块状态和扳手操作
+            BlockState blockState = event.getLevel().getBlockState(event.getPos());
+            Block block = blockState.getBlock();
+
+            if (!(block instanceof IWrenchable)) return;
+
+            // 执行扳手操作（这里不需要具体执行，只需要取消事件）
+            event.setCanceled(true); // 取消事件，防止继续执行
+            LOGGER.info("Forge扳手事件已取消");
+        }
     }
 }
